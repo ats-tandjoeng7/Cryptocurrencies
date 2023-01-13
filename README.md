@@ -25,7 +25,7 @@ This project and Module 19 assignment focused on cultivating knowledge and skill
 - Source code: [crypto_clustering.ipynb](./crypto_clustering.ipynb).
 - Source data: [crypto_data.csv](./Resources/crypto_data.csv).
 - Image file: png files.
-- Software: [Pandas User Guide](https://pandas.pydata.org/pandas-docs/stable/user_guide/index.html#user-guide), [Scikit-learn User Guide - Unsupervised Learning](https://scikit-learn.org/stable/unsupervised_learning.html), [hvPlot](https://hvplot.holoviz.org/user_guide/Introduction.html).
+- Software: [Pandas User Guide](https://pandas.pydata.org/pandas-docs/stable/user_guide/index.html#user-guide), [Scikit-learn User Guide - Unsupervised Learning](https://scikit-learn.org/stable/unsupervised_learning.html), [hvPlot](https://hvplot.holoviz.org/user_guide/Introduction.html), [Plotly Express in Python](https://plotly.com/python/plotly-express/).
 
 ### Challenge Overview
 
@@ -48,29 +48,33 @@ main branch
   &emsp; |&rarr; [./Resources/crypto_data.csv](./Resources/crypto_data.csv)  
 |&rarr; ./Data/  
   &emsp; |&rarr; [./Data/cleaned_crypto_df.png](./Data/cleaned_crypto_df.png)  
-  &emsp; |&rarr; [./Data/clustered_df.png](./Data/clustered_df.png))  
+  &emsp; |&rarr; [./Data/clustered_df.png](./Data/clustered_df.png)  
   &emsp; |&rarr; [./Data/hvplot_elbow_curve.png](./Data/hvplot_elbow_curve.png)  
   &emsp; |&rarr; [./Data/hvplot_3DScatter_pca_and_clusters_clustered_df.png](./Data/hvplot_3DScatter_pca_and_clusters_clustered_df.png)  
   &emsp; |&rarr; [./Data/clustered_df_hvplot_table.png](./Data/clustered_df_hvplot_table.png)  
   &emsp; |&rarr; [./Data/plot_df.png](./Data/plot_df.png)  
   &emsp; |&rarr; [./Data/hvplot_scatter_rescaled_plot_df.png](./Data/hvplot_scatter_rescaled_plot_df.png)  
+  &emsp; |&rarr; [./Data/px_elbow_curve.png](./Data/px_elbow_curve.png)  
+  &emsp; |&rarr; [./Data/px_scatter_rescaled_plot_df.png](./Data/px_scatter_rescaled_plot_df.png)  
 
 ## Part 1: Preprocessing the Data for PCA
 
-Using our knowledge of the Python Pandas and scikit-learn preprocessing libraries, we read in the csv data as a DataFreame, cleaned the data, filtered a few unrelated entries, reshaped the original dataset, and performed the standardization and scaling processes. The source code can be referred in [crypto_clustering.ipynb](./crypto_clustering.ipynb), which I used to efficiently accomplish the data cleaning and preprocessing steps. The cleaned data were later passed down to the principal component analysis step ([sklearn.decomposition.PCA](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)), in which we optimized the dimension of our dataset.
+Using our knowledge of the Python Pandas and scikit-learn preprocessing libraries, we read in the csv data as a DataFrame, cleaned the data, filtered a few unrelated entries, reshaped the original dataset, and performed the standardization and scaling processes. The source code can be referred in [crypto_clustering.ipynb](./crypto_clustering.ipynb), which I used to efficiently accomplish the data cleaning and preprocessing steps. The cleaned data were later passed down to the principal component analysis step ([sklearn.decomposition.PCA](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)), in which we optimized the dimension of our dataset.
 
 ### Cleaning *crypto_df* DataFrame
 
 After importing the required dependencies, we read the csv data as a DataFrame called *crypto_df*. The transformation from the original dataset to the standardized and scaled dataset is illustrated below.
 
 - **1252** rows and **6** columns at the start of data preprocessing steps.
-- `crypto_df.IsTrading` column contained **108** False and **1144** True rows of Boolean entries. The neat Boolean indexing in Pandas could then be used to filter the True entries exclusively, often in combination with `loc[]`.
+- `crypto_df.IsTrading` column contained **108** False and **1144** True rows of Boolean entries. The neat Boolean indexing in Pandas could then be used to filter the True entries exclusively, sometimes in combination with `loc[]`.
 - **508** rows containing any null (NaN) values were deleted. Some of these rows had already been removed in the previous step.
 - **153** rows where coins are mined were removed. We only run our unsupervised learning model on data where coins are mined in this project.
 - The shape of the cleaned *crypto_df* DataFrame was **(532, 4)** at the end of data preprocessing steps. The first ten rows are shown in **Table 1**.
 
 ```
 # Initial imports
+import warnings
+warnings.filterwarnings('ignore')
 import pandas as pd
 import hvplot.pandas
 from pathlib import Path
@@ -78,8 +82,6 @@ import plotly.express as px
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
-import warnings
-warnings.filterwarnings('ignore')
 
 # Load the crypto_data.csv dataset.
 file_path = Path('./Resources/crypto_data.csv')
@@ -112,7 +114,7 @@ display(crypto_df.shape, crypto_df.head(10))
 
 ### Encoding Categorical Columns
 
-We used Pandas `get_dummies()` for encoding the categorical columns, which contained string values, and then standardized and scaled the data by using the StandardScaler method. Data were rescaled to a mean of 0 and standard deviation of 1 by the StandardScaler method.
+We adopted Pandas `get_dummies()` method for encoding the categorical columns containing string values into binary features (similar to One-hot encoding method) and the StandardScaler method for standardizing and scaling the data as illustrated in the following code snippet. Our feature data were mostly scaled to a mean near zero and unit variance by the StandardScaler method.
 
 ```
 # Use get_dummies() to create variables for text features.
@@ -127,7 +129,7 @@ X_scaled = scaler.fit_transform(X)
 
 ## Part 2: Reducing Data Dimensions Using PCA
 
-We used the following code snippet to reduce the dimension of our dataset to three principal components and created a new DataFrame called `pcs_df`.
+We used the following code snippet to reduce the dimension of our dataset to three principal components and created a new DataFrame called `pcs_df`. In this analysis, `random_state=1` was globally used across all models that we evaluated.
 
 ```
 # Using PCA to reduce dimension to three principal components.
@@ -142,12 +144,10 @@ pcs_df = pd.DataFrame(X_pca, columns=['PC 1', 'PC 2', 'PC 3'], index=crypto_df.i
 
 ## Part 3: Clustering Cryptocurrencies Using K-means
 
-We used the following code snippet to create an elbow curve for finding the best value for K. The elbow curve suggested that the optimal value for K was 4 as depicted in Fig. 1. We then fed this K value to create our model using the KMeans method. We merged the *pcs_df* DataFrame and the results from the KMeans model with *crypto_df* DataFrame. The first ten rows of the resulting DataFrame called *clustered_df* are shown in **Table 2**.
+The following code snippet was used to create an elbow curve for finding the best value for K. The elbow curve suggested that the optimal value for K was 4 as depicted in Fig. 1. We then fed this K value to create our model using the KMeans clustering algorithm. We merged the *pcs_df* DataFrame and the results from our KMeans model with *crypto_df* DataFrame. The first ten rows of the resulting DataFrame called *clustered_df* are shown in **Table 2**.
 
 ```
 def get_clusters(k, data):
-    # # Create a copy of the DataFrame
-    # data = data.copy()
     # Initialize the K-Means model
     model = KMeans(n_clusters=k, random_state=seedn)
     # Fit the model
@@ -184,11 +184,11 @@ clustered_df.head(10)
 
 ## Part 4: Visualizing Cryptocurrencies Results
 
-The visualization results are illustrated in Fig. 2, **Table 3&ndash;4**, and Fig. 3.
+The visualization of our analysis results are illustrated in Fig. 2, **Table 3&ndash;4**, and Fig. 3.
 
 - Fig. 2 shows the 3D-scatter plots of principal components and clusters of the cryptocurrencies data.
-- **Table 3** shows the table created by using `hvplot.table` from the *clustered_df* DataFrame.
-- **Table 4** shows the *plot_df* DataFrame that was used to graph the scatter plots.
+- **Table 3** demonstrates the table created by using `hvplot.table` from the *clustered_df* DataFrame.
+- **Table 4** demonstrates the *plot_df* DataFrame that was used to graph the scatter plots in Fig. 3.
 - Fig. 3 shows the scatter plots using the scaled cryptocurrencies data.
 
 ![Fig. 2](./Data/hvplot_3DScatter_pca_and_clusters_clustered_df.png)  
@@ -205,11 +205,18 @@ The visualization results are illustrated in Fig. 2, **Table 3&ndash;4**, and Fi
 
 ## Summary
 
-All deliverables have been completed and analyzed according to the assignment requirements, including code refactoring, properly formatted outputs, and quality assurance for ensuring accurate results.
+All deliverables have been completed and analyzed according to the assignment requirements, including code refactoring, properly formatted outputs, and quality assurance for ensuring accurate results. As for visualizing the cryptocurrencies results, we could also employ matplotlib or plotly.express libraries rather than hvplot.pandas to graph the elbow curve and scatter plots. Fig. 4&ndash;5 illustrate a few examples of using plotly.express in combination with Kaleido package.
+
+![Fig. 4](./Data/px_elbow_curve.png)  
+**Fig. 4 Elbow curve of the decomposed cryptocurrencies data (plotly.express plot).**
+
+![Fig. 5](./Data/px_scatter_rescaled_plot_df.png)  
+**Fig. 5 Scatter plots of the rescaled *plot_df* DataFrame (plotly.express plot).**
 
 ## References
 
 [Pandas User Guide](https://pandas.pydata.org/pandas-docs/stable/user_guide/index.html#user-guide)  
 [Scikit-learn User Guide - Unsupervised Learning](https://scikit-learn.org/stable/unsupervised_learning.html)  
-[Scikit-learn User Guide: Supervised Learning](https://scikit-learn.org/stable/supervised_learning.html)  
+[Scikit-learn User Guide - Supervised Learning](https://scikit-learn.org/stable/supervised_learning.html)  
 [hvPlot](https://hvplot.holoviz.org/user_guide/Introduction.html)  
+[Plotly Express in Python](https://plotly.com/python/plotly-express/)  

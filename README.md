@@ -10,7 +10,7 @@ This project focused on the application of various unsupervised Machine Learning
 - [Part 1: Preprocessing the Data for PCA](#part-1-preprocessing-the-data-for-pca)
   - [Cleaning *crypto_df* DataFrame](#cleaning-crypto_df-dataframe)
   - [Encoding Categorical Columns](#encoding-categorical-columns)
-- [Part 2: Reducing Data Dimensions Using PCA](#part-2-reducing-data-dimension-using-pca)
+- [Part 2: Reducing Data Dimensions Using PCA](#part-2-reducing-data-dimensions-using-pca)
 - [Part 3: Clustering Cryptocurrencies Using K-means](#part-3-clustering-cryptocurrencies-using-k-means)
 - [Part 4: Visualizing Cryptocurrencies Results](#part-4-visualizing-cryptocurrencies-results)
 - [Summary](#summary)
@@ -59,7 +59,7 @@ main branch
 
 ## Part 1: Preprocessing the Data for PCA
 
-Using our knowledge of the Python Pandas and scikit-learn preprocessing libraries, we read in the csv data as a DataFrame, cleaned the data, filtered a few unrelated entries, reshaped the original dataset, and performed the standardization and scaling processes. The source code can be referred in [crypto_clustering.ipynb](./crypto_clustering.ipynb), which I used to efficiently accomplish the data cleaning and preprocessing steps. The cleaned data were later passed down to the principal component analysis step ([sklearn.decomposition.PCA](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)), in which we optimized the dimension of our dataset.
+Using our knowledge of the Python Pandas and scikit-learn preprocessing libraries, we read in the csv data as a DataFrame, cleaned the data, filtered a few unrelated entries, reshaped the original dataset, and performed the standardization and scaling processes. The source code can be referred in [crypto_clustering.ipynb](./crypto_clustering.ipynb), which I used to efficiently accomplish the data cleaning and preprocessing steps. The cleaned data were later passed down to the principal component analysis step ([sklearn.decomposition.PCA](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)), in which we optimized the dimensions of our dataset.
 
 ### Cleaning *crypto_df* DataFrame
 
@@ -129,7 +129,7 @@ X_scaled = scaler.fit_transform(X)
 
 ## Part 2: Reducing Data Dimensions Using PCA
 
-We used the following code snippet to reduce the dimension of our dataset to three principal components and created a new DataFrame called `pcs_df`. In this analysis, `random_state=1` was globally used across all models that we evaluated.
+We used the following code snippet to reduce the dimensions of our dataset to three principal components and created a new DataFrame called `pcs_df`. In this analysis, `random_state=1` was globally used across all models that we evaluated.
 
 ```
 # Using PCA to reduce dimension to three principal components.

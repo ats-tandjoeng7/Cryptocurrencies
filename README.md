@@ -68,8 +68,8 @@ After importing the required dependencies, we read the csv data as a DataFrame c
 - **1252** rows and **6** columns at the start of data preprocessing steps.
 - `crypto_df.IsTrading` column contained **108** False and **1144** True rows of Boolean entries. The neat Boolean indexing in Pandas could then be used to filter the True entries exclusively, sometimes in combination with `loc[]`.
 - **508** rows containing any null (NaN) values were deleted. Some of these rows had already been removed in the previous step.
-- **153** rows where coins are mined were removed. We only run our unsupervised learning model on data where coins are mined in this project.
-- The shape of the cleaned *crypto_df* DataFrame was **(532, 4)** at the end of data preprocessing steps. The first ten rows are shown in **Table 1**.
+- **153** rows where coins had never been mined were removed. We only run our unsupervised learning model on data where coins are being mined in this project.
+- The shape of the cleaned *crypto_df* DataFrame was **(532, 4)** at the end of data preprocessing steps. The first ten rows are shown in **Table 1**. In summary, there would be **532** tradable cryptocurrencies in the scaled and trained dataset.
 
 ```
 # Initial imports
